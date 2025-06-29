@@ -1,0 +1,332 @@
+{
+  "name": "My workflow 3 copy",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fbd7477e-59a7-4613-8c9c-fa4cd34fbe21",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Consult",
+              "description": "Classify emails that inquire about services, availability or scheduling a consultation"
+            },
+            {
+              "category": "billing",
+              "description": "Classify emails that relate to payment inquiries, invoices, charges, or Financial transaction"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3ad63320-1e92-4d1a-a268-ad02824b1a03",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        200
+      ],
+      "id": "8a1b27df-22e4-4203-8c34-b300f321e4ef",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_1931959798345371947"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        680,
+        160
+      ],
+      "id": "faf191bd-5c8f-44fc-a69f-ab986fd448fd",
+      "name": "billing",
+      "webhookId": "f274a7b2-c639-4fed-81ad-6394f196c05d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xu9EprI6etDnbMQd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_2253790014221967000"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        -180
+      ],
+      "id": "e8f96916-13e4-43a4-9860-0aa53f651d4d",
+      "name": "Consult",
+      "webhookId": "fe12f616-e41f-4fd9-9615-f557bca03412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xu9EprI6etDnbMQd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Your task is to take the unread emails, Email and craft a response accordingly to it. Get the unread email from the body {{ $('Text Classifier').item.json.snippet }} and then write it for the email based on: {{ $json.id }}.\n\nContext:\nYou are responding as \"Shave it For Later\" located in Fredericton, NB. Business hours are Mon–Sat, 10 AM to 7 PM. We offer Haircut ($30), Skin Fade ($35), Beard Trim ($18), Haircut + Beard Combo ($45), Kids Cuts ($22), and custom designs as an add-on (+$10). Appointments are preferred, but walk-ins are accepted if a slot is available. Customers may also request last-minute bookings or style consultations. Please keep responses friendly, casual, and short — like a helpful barber would.\n\nOutput tone:\nWarm, casual-professional, and helpful. Offer times if possible, confirm pricing or availability if asked, and politely manage unrealistic requests (e.g., after-hours).\n\nExample of how to reply:\n- “Hey! We’ve got space around 5:30 PM Friday — want me to lock that in?”\n- “Yes, we do designs! They’re an extra $10 with your cut. Let me know what day works best!”\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        880,
+        -180
+      ],
+      "id": "faa5adde-3f94-4230-b00a-f06ccd119397",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "02kaRX5zkKj8tVp9",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Text Classifier').item.json.Subject }}",
+        "message": "={{ $json.message.content }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1240,
+        -180
+      ],
+      "id": "00632af3-1e1c-4493-8ed0-f936633709f2",
+      "name": "Gmail",
+      "webhookId": "e22e2d3e-f0a8-4cb3-b376-624fc6aac267",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xu9EprI6etDnbMQd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Your task is to take the unread emails, Email and craft a response accordingly to it. Get the unread email from the body {{ $('Text Classifier').item.json.snippet }} and then write it for the email based on: {{ $json.id }}.\n\nContext:\nYou are replying on behalf of \"Shave it For Later\" located in Fredericton, NB. Business hours are Mon–Sat, 10 AM to 7 PM. The shop accepts debit, credit, and cash (no cheques). All payments are due immediately after the service. No PayLater or payment splitting is allowed.\n\nService Pricing:\n- Classic Fade: $30  \n- Skin Fade: $35  \n- Buzz Cut: $20  \n- Beard Trim: $18 (+$5 for hot towel)  \n- Haircut + Beard Combo: $45  \n- Kids Cut (under 12): $22  \n- Design/Etching (Add-on): +$10  \n- Hot Towel Add-on: +$5  \n- Black Mask Add-on: +$7\n\nReceipts are emailed only — we do not offer printed copies. We can resend receipts for services completed within the last **3 months**. Any older invoices may not be retrievable.\n\nOutput tone:\nPolite, clear, and professional. If the customer is asking for a receipt, confirm the resend and check eligibility. If asking about prices, provide the requested service rates. If asking about payment methods, list the accepted options clearly.\n\nExample of how to reply:\n- “Thanks for your message! We’ve just resent your receipt for your last service — check your spam folder if it’s not there.”\n- “Here’s our updated pricing: a Skin Fade is $35, and the Combo with beard is $45. Let us know if you’d like to book something!”\n- “We accept debit, credit, and cash. Unfortunately, PayLater and split payments aren't available at the moment.”\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        900,
+        160
+      ],
+      "id": "a50ec279-e148-4e4c-804d-1cdd48b33bac",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "02kaRX5zkKj8tVp9",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Text Classifier').item.json.Subject }}",
+        "message": "={{ $json.message.content }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        160
+      ],
+      "id": "a62ee1e5-1020-4af7-abfe-ade81054752d",
+      "name": "Gmail1",
+      "webhookId": "9aea530e-0c1f-4989-95a4-2a68add70a25",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xu9EprI6etDnbMQd",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Consult",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "billing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Consult": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "billing": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0b9be8ff-1e72-4a1b-8073-d561139d8947",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6dd6f6873b475621fba8303fa7dff6507ea0b1f80ecd65d4c62a0ac5c528618c"
+  },
+  "id": "oHyZbGETQI8re1Ax",
+  "tags": []
+}
