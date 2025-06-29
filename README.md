@@ -2,11 +2,9 @@
 
 **`ai-email-agent-barbershop-n8n`**
 
-> (Clean, searchable, and tells people exactly what this project does)
+
 
 ---
-
-### 📝 `README.md` Content
 
 ```markdown
 # AI Email Agent for Barbershop 🪒📬
